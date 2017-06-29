@@ -1,0 +1,52 @@
+---
+# - block: # prepare memcached server list from DNS-SD
+#   - name: Get all memcached server list from DNS-SD
+#     set_fact:
+#       php_memcached_srv_list: "{{ lookup('dig', php_memcached_srv_fqdn + '/SRV', 'flat=0', wantlist=True) }}"
+#     when:
+#       - php_memcached_srv_name is defined
+#       - php_memcached_srv_name is not none
+#       - not ((php_memcached_srv_name | trim) == '')
+#       - php_memcached_srv_domain is defined
+#       - php_memcached_srv_domain is not none
+#       - not ((php_memcached_srv_domain | trim) == '')
+#
+#   - debug:
+#       var: php_memcached_srv_list
+#   - pause:
+
+
+- block: # config php ini
+  - name: Change php session save handler
+    ini_file:
+      path: "{{ php_config_filepath }}"
+      section: Session
+      option: session.save_handler
+      value: memcache
+    notify: Restart Apache Service
+
+  - name: Change php session save path handler
+    ini_file:
+      path: "{{ php_config_filepath }}"
+      section: Session
+      option: session.save_path
+      value: "'{{ php_extension_memcache.session_save_path | join(', ') }}'"
+    notify: Restart Apache Service
+
+
+- block: # config memcache ini
+  - name: Modify allow_failover in memcache.ini
+    ini_file:
+      path: "{{ php_memcache_filepath }}"
+      section: memcache
+      option: memcache.allow_failover
+      value: "{{ php_extension_memcache.allow_failover }}"
+    notify: Restart Apache Service
+
+  - name: Modify session_redundancy in memcache.ini
+    ini_file:
+      path: "{{ php_memcache_filepath }}"
+      section: memcache
+      option: memcache.session_redundancy
+      value: "{{ php_extension_memcache.session_redundancy }}"
+    notify: Restart Apache Service

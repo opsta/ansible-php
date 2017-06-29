@@ -1,0 +1,12 @@
+---
+- name: Install PHP extension
+  apt:
+     pkg: "{{ item }}"
+     state: latest
+     update_cache: yes
+  with_items:
+    - "{{ php_extension_packages }}"
+
+- include: php_memcache.yml
+  when:
+    - php_extension_memcache is defined

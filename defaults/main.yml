@@ -7,9 +7,25 @@ php_main_packages:
 php_extension_packages:
   - "{{ php_package_name }}-mysql"
   - "{{ php_package_name }}-mcrypt"
+  - "php-memcache"
 
 php_deb_repository: ppa:ondrej/php
 
 php_apache_service_name: apache2
 php_apache_packages:
   - apache2
+
+php_config_filepath: "/etc/php/{{ php_version }}/{{ php_apache_service_name }}/php.ini"
+php_memcache_filepath: "/etc/php/{{ php_version }}/mods-available/memcache.ini"
+
+# php_memcached_srv_name: service-test
+php_memcached_srv_domain: "{{ os_pdns_domain | default('') }}"
+php_memcached_srv_fqdn: "{{ php_memcached_srv_name }}._http._tcp.{{ php_memcached_srv_domain }}."
+
+# php_extension_memcache:
+#   session_save_path:
+#     - tcp://memcache1:11211
+#     - tcp://memcache2:11211
+#     - tcp://memcache3:11211
+#   session_redundancy: 4
+#   allow_failover: 1
